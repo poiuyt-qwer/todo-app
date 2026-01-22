@@ -4,8 +4,9 @@ import TodoItems from './TodoItems'
 
 const Todo = () => {
 
-const [todoList, setTodoList] = useState(localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : []);
+// const [todoList, setTodoList] = useState(localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : []);
 
+const [todoList, setTodoList] = useState([]);
 
 const inputRef = useRef();
 
@@ -21,7 +22,7 @@ const add = () => {
         text: inputText,
         isComplete: false,
     }
-
+    console.log(newTodo);
     fetch("http://localhost:8000/tasks", {
         method: "POST",
         headers: {
@@ -39,6 +40,9 @@ const add = () => {
 
 const deleteTodo = (id) =>{
     setTodoList((prvTodos)=>{
+        fetch(`http://localhost:8000/tasks/${id}`, {
+            method: "DELETE",
+        }).then((response) => console.log(response));
         return prvTodos.filter((todo) => todo.id !== id)
     })
 }
@@ -47,7 +51,7 @@ const toggle = (id) =>{
     setTodoList((prevTodos)=>{
         return prevTodos.map((todo)=>{
             if(todo.id === id){
-                fetch(`http://localhost:8000/tasks`, {
+                fetch(`http://localhost:8000/tasks/${id}`, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -62,15 +66,37 @@ const toggle = (id) =>{
             return todo;
         })
     })
-
-    
 }
 
-useEffect(()=>{
-    localStorage.setItem("todos", JSON.stringify(todoList))
-}, [todoList])
+// useEffect(()=>{
+//     //localStorage.setItem("todos", JSON.stringify(todoList))
+// }, [todoList])
+
+async function getTask(){
+    try{
+        const response = await fetch('http://localhost:8000/tasks');
+
+        const data = await response.json();
+
+        for(var i = 0;i<data.length;i++){
+            const newTodo = {
+                id: data[i].id,
+                text: data[i].title,
+                isComplete: data[i].is_complete,
+            }
+            setTodoList((prev)=> [...prev, newTodo]);
+        }
+    }
+    catch(error){
+        console.error('error', error);
+    }
+}
+useEffect(() =>{
+    getTask();
+}, [])
 
   return (
+    
     <div className='bg-white place-self-center w-11/12 max-w-md flex flex-col p-7 min-h-[550px] rounded-xl'>
       
 {/* --------- title ------------ */}

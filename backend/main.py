@@ -6,18 +6,18 @@ import datetime
 
 class TaskBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
-    title: str = Field()
+    title: str | None = Field()
     
 class Task(TaskBase, table=True):
     is_complete: bool = Field(default=False)
-    datetime: str = Field(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    datetime: str = Field(default = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 class TaskPublic(TaskBase):
     is_complete: bool = Field(default=False)
     
 class TaskCreate(TaskBase):
     is_complete: bool = Field(default=False)
-    datetime: str = Field(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    datetime: str = Field(default = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 class TaskUpdate(TaskBase):
     is_complete: bool | None = None
@@ -40,7 +40,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 app = FastAPI()
 
 origins = [
-    "*",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(
