@@ -6,6 +6,7 @@ const Todo = () => {
 
 const [todoList, setTodoList] = useState(localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : []);
 
+
 const inputRef = useRef();
 
 const add = () => {
@@ -20,6 +21,18 @@ const add = () => {
         text: inputText,
         isComplete: false,
     }
+
+    fetch("http://localhost:8000/tasks", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            id: newTodo.id,
+            title: inputText,
+        }),
+    }).then((response) => console.log(response));
+
     setTodoList((prev)=> [...prev, newTodo]);
     inputRef.current.value = "";
 }
@@ -34,11 +47,23 @@ const toggle = (id) =>{
     setTodoList((prevTodos)=>{
         return prevTodos.map((todo)=>{
             if(todo.id === id){
+                fetch(`http://localhost:8000/tasks`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        title: todo.text,
+                        is_complete: !todo.isComplete
+                    }),
+                }).then((response) => console.log(response));
                 return {...todo, isComplete: !todo.isComplete}
             }
             return todo;
         })
     })
+
+    
 }
 
 useEffect(()=>{

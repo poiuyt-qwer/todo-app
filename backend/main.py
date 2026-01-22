@@ -1,7 +1,8 @@
 from typing import Annotated
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+import datetime
 
 class TaskBase(SQLModel):
     id: int | None = Field(default=None, primary_key=True)
@@ -9,15 +10,14 @@ class TaskBase(SQLModel):
     
 class Task(TaskBase, table=True):
     is_complete: bool = Field(default=False)
-    # add datetime
+    datetime: str = Field(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 class TaskPublic(TaskBase):
     is_complete: bool = Field(default=False)
     
 class TaskCreate(TaskBase):
     is_complete: bool = Field(default=False)
-    # add datetime
-    pass
+    datetime: str = Field(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 class TaskUpdate(TaskBase):
     is_complete: bool | None = None
@@ -38,6 +38,18 @@ def get_session():
 SessionDep = Annotated[Session, Depends(get_session)]
 
 app = FastAPI()
+
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def on_startup():
